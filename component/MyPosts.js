@@ -1,7 +1,7 @@
 import {View,Text,StyleSheet, Image} from 'react-native'
 import {useEffect} from 'react'
 
-const CommunityPosts=(props)=>{
+const MyPosts=(props)=>{
 
     return(
         <View style={styles.post}>
@@ -13,19 +13,25 @@ const CommunityPosts=(props)=>{
                         {/* <Image source={require('../static/community.png')} style={{height:15,width:15,marginLeft:5,opacity:0.5,resizeMode:'contain'}}/> */}
                     </View>
                     
-                    <Text style={styles.time}>回复于{props.time}</Text>
+                    <Text style={styles.time}>{props.time}</Text>
                 </View>
             </View>
+            
             <View style={styles.postInfo}>
                 <Text numberOfLines={1} ellipsizeMode = 'tail' style={styles.postTitle}>{props.postTitle}</Text>
                 <Text numberOfLines={4} ellipsizeMode = 'tail' style={styles.postContent}>{props.postContent}</Text>
             </View>
-            <View style={styles.postTypeView}>
+            <View style={{display:'flex',flexDirection:'row',marginLeft:15,marginBottom:15,}}>
+                <View style={styles.communityView}>
+                    <Image source={require('../static/community_done.png')} style={styles.communityImage} />
+                    <Text style={styles.communityName}>{props.commuName}</Text>
+                </View>
                 <View style={styles.postType}>
                     <Image source={props.type==0?require('../static/chatPost.png'):require('../static/ballPost.png')} style={styles.postImage} />
                     <Text style={styles.postTypeText}>{props.type==0?'闲聊帖':'约球帖'}</Text>
                 </View>
             </View>
+            
             <View style={styles.operate}>
                 <View style={styles.operateContainer}>
                     <Image style={styles.operateImage} source={require('../static/share.png')}/>
@@ -57,7 +63,35 @@ const styles=StyleSheet.create({
         backgroundColor: 'white',
         borderRadius: 10
     },
-
+    postTypeView:{
+        display:'flex',
+        flexDirection:'row',
+        marginBottom:10,
+        marginLeft:15
+    },
+    postType:{
+        borderWidth:1,
+        borderColor:'#3686e7',
+        borderRadius:100,
+        padding:5,
+        paddingLeft:8,
+        paddingRight:8,
+        display:'flex',
+        flexDirection:'row',
+        justifyContent:'center',
+        alignItems:'center',
+        marginLeft:15
+    },
+    postImage:{
+        height:15,
+        width:15,
+        resizeMode:'contain',
+        marginRight:5
+    },
+    postTypeText:{
+        color:'#3686e7',
+        fontSize:13,
+    },
     userInfoContainer:{
         display:'flex',
         flexDirection:'row',
@@ -99,7 +133,7 @@ const styles=StyleSheet.create({
     postInfo:{
         margin:15,
         marginTop:5,
-        marginBottom:10
+        marginBottom:10,
     },
     postTitle:{
         fontSize:16,
@@ -115,33 +149,28 @@ const styles=StyleSheet.create({
         letterSpacing:0,
         color:'rgba(0,0,0,0.8)'
     },
-    postTypeView:{
+    communityView:{
+        
         display:'flex',
         flexDirection:'row',
-        marginBottom:15,
-        marginLeft:15
-    },
-    postType:{
-        borderWidth:1,
+        alignItems:'center',
         borderColor:'#3686e7',
+        borderWidth:1,
         borderRadius:100,
         padding:5,
         paddingLeft:8,
-        paddingRight:8,
-        display:'flex',
-        flexDirection:'row',
-        justifyContent:'center',
-        alignItems:'center'
+        paddingRight:8
+
     },
-    postImage:{
+    communityImage:{
         height:15,
         width:15,
-        resizeMode:'contain',
-        marginRight:5
+        resizeMode:'contain'
     },
-    postTypeText:{
+    communityName:{
         color:'#3686e7',
         fontSize:13,
+        marginLeft:5
     },
     operate:{
         display:'flex',
@@ -169,4 +198,4 @@ const styles=StyleSheet.create({
     }
 })
 
-export default CommunityPosts;
+export default MyPosts;

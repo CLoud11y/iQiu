@@ -1,5 +1,6 @@
+import { useState } from 'react'
 import {View,Text,Pressable, StyleSheet,StatusBar,Image} from 'react-native'
-import { FlatList } from 'react-native-gesture-handler'
+import { FlatList, TextInput } from 'react-native-gesture-handler'
 
 const Navigation=(props)=>{
     const navi=()=>{
@@ -28,7 +29,7 @@ const Navigation=(props)=>{
 }
 
 const PostContent=(props)=>{
-    const PostHeader=()=>{
+    const PostHeader=(props)=>{
         
         // let choiceAni= useRef(new Animated.Value(0)).current
         // let left=choiceAni.interpolate({
@@ -70,7 +71,10 @@ const PostContent=(props)=>{
                                 style={postHeaderStyles.posterAvatar}/>
                         </View>
                         <View style={postHeaderStyles.posterNameContainer}>
-                            <Text style={postHeaderStyles.posterName}>D1nNer-</Text>
+                            <View style={{display:'flex',flexDirection:'row',alignItems:'center'}}>
+                                <Text style={{fontSize:16,color:'rgba(0,0,0,0.6)'}}>D1nNer-</Text>
+                                <Image source={require('../../static/level.png')} style={{height:15,width:15,resizeMode:'contain',marginLeft:5}} />
+                            </View>
                             <View style={postHeaderStyles.posterDetail}>
                                 <Text style={postHeaderStyles.postDate}>11-30</Text>
                                 <Text style={postHeaderStyles.postDate}>地点:上海</Text>
@@ -98,7 +102,7 @@ const PostContent=(props)=>{
                             <Text style={contentStyles.operateText}>点赞</Text>
                         </View>
                     </View>
-                    <View style={contentStyles.recommendContainer}>
+                    <Pressable style={contentStyles.recommendContainer} onPress={()=>props.navigation.navigate('CommunityDetail')}>
                         <Text style={contentStyles.recommend}>相关推荐</Text>
                         <View style={contentStyles.recommendView}>
                             <View style={contentStyles.communityInfo}>
@@ -112,7 +116,7 @@ const PostContent=(props)=>{
                                 <Text style={{fontSize:12}}>查看</Text>
                             </View>
                         </View>
-                    </View>
+                    </Pressable>
                 </View>
                 <View style={contentStyles.contentDivider}></View>
                 <View style={contentStyles.filterView}>
@@ -159,8 +163,11 @@ const PostContent=(props)=>{
                         <View style={commentStyles.avatarView}>
                             <Image source={props.avatar} style={commentStyles.avatar}/>
                         </View>
+                        <View style={{display:'flex',flexDirection:'row',alignItems:'center'}}>
+                            <Text style={commentStyles.userName}>{props.userName}</Text>
+                            <Image source={require('../../static/level.png')} style={{height:15,width:15,resizeMode:'contain',marginLeft:5}} />
+                        </View>
                         
-                        <Text style={commentStyles.userName}>{props.userName}</Text>
                     </View>
                     <View style={commentStyles.likeView}>
                         <Image source={require('../../static/like.png')} style={commentStyles.like} />
@@ -181,29 +188,51 @@ const PostContent=(props)=>{
     }
 
     return(
-        <View style={postStyles.postView}>
-            <FlatList style={postStyles.postScroll}
-                showsVerticalScrollIndicator = {false}
-                ListHeaderComponent={()=><PostHeader/>}
-                data={comment}
-                renderItem={({ item, index, separators }) => (
-                    <Pressable onPress={()=>{console.log(index)}} key={item.cid}>
-                        <Comment {...item}/>
-                    </Pressable>
-                )}
-            />
-        </View>
+        <FlatList style={postStyles.postScroll}
+            showsVerticalScrollIndicator = {false}
+            keyboardDismissMode='on-drag'
+            ListHeaderComponent={()=><PostHeader navigation={props.navigation} />}
+            ListFooterComponent={()=>{
+                return(
+                    <View style={{display:'flex',justifyContent:'center',alignItems:'center',flexDirection:'row',padding:20}}>
+                        <Text>暂时只有这么多啦~</Text>
+                    </View>
+                )
+            }}
+            data={comment}
+            renderItem={({ item, index, separators }) => (
+                <Pressable onPress={()=>{console.log(index)}} key={item.cid}>
+                    <Comment {...item}/>
+                </Pressable>
+            )}
+        />
         
     )
 }
 
 const Operation=(props)=>{
+    let [focus,setFocus]=useState(0)
+
     return(
         <View style={operationStyles.operationView}>
-            <View style={operationStyles.inputView}></View>
-            <Image source={require('../../static/comment.png')} style={operationStyles.image}/>
-            <Image source={require('../../static/like.png')} style={operationStyles.image}/>
-            <Image source={require('../../static/share.png')} style={operationStyles.image}/>
+            <View style={[operationStyles.inputView,{width:focus==0?'60%':'80%'}]}>
+                <TextInput placeholder='文明发言哦~' style={operationStyles.input} onFocus={()=>setFocus(1)} onBlur={()=>setFocus(0)}/>
+            </View>
+            {
+                focus==0?
+                <>
+                    <Image source={require('../../static/comment.png')} style={operationStyles.image} />
+                    <Image source={require('../../static/like.png')} style={operationStyles.image}/>
+                    <Image source={require('../../static/share.png')} style={operationStyles.image}/>
+                </>
+                
+                :
+                <View style={operationStyles.send}>
+                    <Text style={{fontSize:12,color:'white'}}>发表</Text>
+                </View>
+
+            }
+            
         </View>
         
     )
@@ -216,7 +245,7 @@ const PostDetail=(props)=>{
         <>
             <View style={mainStyles.view}>
                 <Navigation navigation={props.navigation}/>
-                <PostContent/>
+                <PostContent navigation={props.navigation}/>
                 <Operation/>
             </View>
         </>
@@ -231,7 +260,7 @@ const mainStyles=StyleSheet.create({
         // borderStyle:'solid',
         // borderColor:'red',
         // borderWidth:2,
-        display:'flex',
+        // display:'flex',
         // backgroundColor:'red'
     },
 })
@@ -376,10 +405,10 @@ const contentStyles=StyleSheet.create({
         marginBottom:20
     },
     content:{
-        fontSize:16,
+        fontSize:15,
         color:'rgba(0,0,0,0.8)',
         // letterSpacing:1,
-        lineHeight:30
+        lineHeight:28
     },
     operateView:{
         display:'flex',
@@ -515,16 +544,9 @@ const contentStyles=StyleSheet.create({
 })
 
 const postStyles=StyleSheet.create({
-    postView:{
-        height:'100%',
-        width:'100%',
-        flexShrink:0.5,
-        backgroundColor:'white'
-        // borderStyle:'solid',
-        // borderColor:'red',
-        // borderWidth:2,
-    },
+
     postScroll:{
+        backgroundColor:'white'
         // borderStyle:'solid',
         // borderColor:'red',
         // borderWidth:2,
@@ -544,11 +566,31 @@ const operationStyles=StyleSheet.create({
         borderStyle:'solid'
     },
     inputView:{
-        width:'60%',
         height:40,
         backgroundColor:'rgb(240,240,240)',
         borderRadius:40,
+        display:'flex',
+        flexDirection:'row',
+        justifyContent:'center',
+        alignItems:'center'
 
+    },
+    input:{
+        marginLeft:10,
+        marginRight:10,
+        // padding:0,
+        // backgroundColor:'red',
+        flex:1
+    },
+    send:{
+        display:'flex',
+        justifyContent:'center',
+        alignItems:'center',
+        backgroundColor:'#3686e7',
+        borderRadius:100,
+        padding:7,
+        paddingLeft:12,
+        paddingRight:12
     },
     image:{
         height:25,
@@ -565,7 +607,7 @@ const commentStyles=StyleSheet.create({
         flexDirection:'row',
         alignItems:'center',
         justifyContent:'space-between',
-        marginBottom:5
+        marginBottom:5,
     },
     userInfo:{
         width:'45%',
@@ -606,10 +648,10 @@ const commentStyles=StyleSheet.create({
         marginLeft:5
     },
     comment:{
-        fontSize:16,
+        fontSize:15,
         color:'rgba(0,0,0,0.8)',
         // letterSpacing:1,
-        lineHeight:30,
+        lineHeight:28,
         marginLeft:65
     },
     commentDate:{
@@ -617,7 +659,7 @@ const commentStyles=StyleSheet.create({
         display:'flex',
         flexDirection:'row',
         alignItems:'center',
-        marginTop:10,
+        marginTop:5,
     },
     dateText:{
         fontSize:12,

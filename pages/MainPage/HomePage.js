@@ -6,12 +6,58 @@ import { useEffect } from 'react';
 import HomePosts from '../../component/HomePosts'
 import Swiper from 'react-native-swiper';
 
+
+const ListHeader=(props)=>{
+
+    return(
+        <View style={headerStyles.headerView}>
+            <View style={headerStyles.headerContainer}>
+                <Pressable onPress={()=>props.onChoose(0)}>
+                    <View style={headerStyles.headerTextView}>
+                        {
+                            props.choice==0&&<LinearGradient style={{width:5,height:'100%',position:'absolute',left:0,borderRadius:10,opacity:1}} colors={['#0dc2e3','#3686e7']}/>
+                        }
+                        <Text style={[headerStyles.headerText,props.choice==0?headerStyles.headerSelected:'']}>全部</Text>
+                    </View>
+                </Pressable>
+                
+                <Pressable onPress={()=>props.onChoose(1)}>
+                    <View style={headerStyles.headerTextView}>
+                        {
+                            props.choice==1&&<LinearGradient style={{width:5,height:'100%',position:'absolute',left:0,borderRadius:10,opacity:1}} colors={['#0dc2e3','#3686e7']}/>
+                        }
+                        <Text style={[headerStyles.headerText,props.choice==1?headerStyles.headerSelected:'']}>闲聊</Text>
+                    </View>
+                </Pressable>
+                
+                <Pressable onPress={()=>props.onChoose(2)}>
+                    <View style={headerStyles.headerTextView}>
+                        {
+                            props.choice==2&&<LinearGradient style={{width:5,height:'100%',position:'absolute',left:0,borderRadius:10,opacity:1}} colors={['#0dc2e3','#3686e7']}/>
+                        }
+                        <Text style={[headerStyles.headerText,props.choice==2?headerStyles.headerSelected:'']}>约球</Text>
+                    </View>
+                </Pressable>
+                
+                
+                
+                
+            </View>
+            
+        </View>
+    )
+}
+
+
 const HomePage = (props) => {
 
-    let postList=[]
+    let postListFollow=[]
+    let postListHot=[]
+    let postListAll=[]
 
-    postList=[{
+    postListFollow=postListHot=postListAll=[{
         pid:1,
+        type:1,
         commuName:'足球圈',
         commuNum:[3854,16430],
         postTitle:'四川大学出版学院挂牌仪式举行',
@@ -19,6 +65,7 @@ const HomePage = (props) => {
         avatar:require('../../static/football.png')
     },{
         pid:2,
+        type:1,
         commuName:'篮球圈',
         commuNum:[3855,16431],
         postTitle:'电子科技大学出版学院挂牌仪式举行',
@@ -26,6 +73,7 @@ const HomePage = (props) => {
         avatar:require('../../static/basketball.png')
     },{
         pid:3,
+        type:0,
         commuName:'足球圈',
         commuNum:[3856,16432],
         postTitle:'四川大学出版学院挂牌仪式举行',
@@ -33,6 +81,7 @@ const HomePage = (props) => {
         avatar:require('../../static/football.png')
     },{
         pid:4,
+        type:0,
         commuName:'乒乓球圈',
         commuNum:[3857,16433],
         postTitle:'四川大学出版学院挂牌仪式举行',
@@ -49,6 +98,7 @@ const HomePage = (props) => {
     let left=choiceAni.interpolate({
         inputRange: [0, 66],
         outputRange: ['0%', '66%'],
+        extrapolate: "clamp"
     });
     
     const changePage=(index)=>{
@@ -76,20 +126,7 @@ const HomePage = (props) => {
             
     }
 
-
-    const ListHeader=()=>{
-        return(
-            <View style={headerStyles.headerView}>
-                <View style={headerStyles.headerContainer}>
-                    <Text style={[headerStyles.headerText,headerStyles.headerSelected]}>全部</Text>
-                    <Text style={headerStyles.headerText}>闲聊</Text>
-                    <Text style={headerStyles.headerText}>约球</Text>
-                </View>
-                
-            </View>
-        )
-    }
-
+    let [type,setType]=useState([0,0,0])
 
     return (
         <>
@@ -115,9 +152,9 @@ const HomePage = (props) => {
                             </Animated.View>
                         </View>
                         <Image source={require('../../static/search.png')} style={styles.search}></Image>
-                        <View style={styles.avatarView}>
+                        <Pressable style={styles.avatarView} onPress={()=>props.navigation.navigate("My")}>
                             <Image source={require('../../static/avatar.jpg')} style={styles.avatar}></Image>
-                        </View>
+                        </Pressable>
                         
                     </View>
                 </View>
@@ -130,35 +167,134 @@ const HomePage = (props) => {
                     <FlatList
                         style={styles.postScroll}
                         showsVerticalScrollIndicator = {false}
-                        ListHeaderComponent={()=><ListHeader/>}
-                        data={postList}
-                        renderItem={({ item, index, separators }) => (
-                            <Pressable onPress={()=>{naviToPost(index)}} key={item.pid}>
-                                <HomePosts {...item}></HomePosts>
-                            </Pressable>
+                        ListHeaderComponent={
+                            ()=>(
+                            <ListHeader 
+                                choice={type[0]}
+                                onChoose={(res)=>{
+                                    setType(type.map((item,index)=>{
+                                        return index==0?res:item
+                                    }))
+                                }} 
+                            />
                         )}
+                        ListFooterComponent={()=>{
+                            return(
+                                <View style={{display:'flex',justifyContent:'center',alignItems:'center',flexDirection:'row',padding:20}}>
+                                    <Text>暂时只有这么多啦~</Text>
+                                </View>
+                            )
+                        }}
+                        data={postListFollow}
+                        renderItem={({ item, index, separators }) => {
+                            if(type[0]==0){
+                                return(
+                                    <Pressable onPress={()=>{naviToPost(index)}} key={item.pid}>
+                                        <HomePosts {...item}></HomePosts>
+                                    </Pressable>
+                                )
+                            }else if(type[0]==1&&item.type==0){
+                                return(
+                                    <Pressable onPress={()=>{naviToPost(index)}} key={item.pid}>
+                                        <HomePosts {...item}></HomePosts>
+                                    </Pressable>
+                                )
+                            }else if(type[0]==2&&item.type==1){
+                                return(
+                                    <Pressable onPress={()=>{naviToPost(index)}} key={item.pid}>
+                                        <HomePosts {...item}></HomePosts>
+                                    </Pressable>
+                                )
+                            }
+                        }}
                     />
                     <FlatList
                         style={styles.postScroll}
                         showsVerticalScrollIndicator = {false}
-                        ListHeaderComponent={()=><ListHeader/>}
-                        data={postList}
-                        renderItem={({ item, index, separators }) => (
-                            <Pressable onPress={()=>{naviToPost(index)}} key={item.pid}>
-                                <HomePosts {...item}></HomePosts>
-                            </Pressable>
+                        ListHeaderComponent={
+                            ()=>(
+                            <ListHeader 
+                                choice={type[1]}
+                                onChoose={(res)=>
+                                    setType(type.map((item,index)=>{
+                                        return index==1?res:item
+                                    }))
+                                } 
+                            />
                         )}
+                        ListFooterComponent={()=>{
+                            return(
+                                <View style={{display:'flex',justifyContent:'center',alignItems:'center',flexDirection:'row',padding:20}}>
+                                    <Text>暂时只有这么多啦~</Text>
+                                </View>
+                            )
+                        }}
+                        data={postListHot}
+                        renderItem={({ item, index, separators }) => {
+                            if(type[1]==0){
+                                return(
+                                    <Pressable onPress={()=>{naviToPost(index)}} key={item.pid}>
+                                        <HomePosts {...item}></HomePosts>
+                                    </Pressable>
+                                )
+                            }else if(type[1]==1&&item.type==0){
+                                return(
+                                    <Pressable onPress={()=>{naviToPost(index)}} key={item.pid}>
+                                        <HomePosts {...item}></HomePosts>
+                                    </Pressable>
+                                )
+                            }else if(type[1]==2&&item.type==1){
+                                return(
+                                    <Pressable onPress={()=>{naviToPost(index)}} key={item.pid}>
+                                        <HomePosts {...item}></HomePosts>
+                                    </Pressable>
+                                )
+                            }
+                        }}
                     />
                     <FlatList
                         style={styles.postScroll}
                         showsVerticalScrollIndicator = {false}
-                        ListHeaderComponent={()=><ListHeader/>}
-                        data={postList}
-                        renderItem={({ item, index, separators }) => (
-                            <Pressable onPress={()=>{naviToPost(index)}} key={item.pid}>
-                                <HomePosts {...item}></HomePosts>
-                            </Pressable>
+                        ListHeaderComponent={
+                            ()=>(
+                            <ListHeader
+                                choice={type[2]}
+                                onChoose={(res)=>
+                                    setType(type.map((item,index)=>{
+                                        return index==2?res:item
+                                    }))
+                                } 
+                            />
                         )}
+                        ListFooterComponent={()=>{
+                            return(
+                                <View style={{display:'flex',justifyContent:'center',alignItems:'center',flexDirection:'row',padding:20}}>
+                                    <Text>暂时只有这么多啦~</Text>
+                                </View>
+                            )
+                        }}
+                        data={postListAll}
+                        renderItem={({ item, index, separators }) => {
+                            if(type[2]==0){
+                                return(
+                                    <Pressable onPress={()=>{naviToPost(index)}} key={item.pid}>
+                                        <HomePosts {...item}></HomePosts>
+                                    </Pressable>
+                                )
+                            }else if(type[2]==1&&item.type==0){
+                                return(
+                                    <Pressable onPress={()=>{naviToPost(index)}} key={item.pid}>
+                                        <HomePosts {...item}></HomePosts>
+                                    </Pressable>
+                                )
+                            }else if(type[2]==2&&item.type==1){
+                                return(
+                                    <Pressable onPress={()=>{naviToPost(index)}} key={item.pid}>
+                                        <HomePosts {...item}></HomePosts>
+                                    </Pressable>
+                                )
+                            }
+                        }}
                     />
                 </Swiper>
                 
@@ -262,6 +398,7 @@ const styles = StyleSheet.create({
         width:25,
         position:'absolute',
         right:40,
+        opacity:0.5
     },
     avatarView:{
         position:'absolute',
@@ -305,14 +442,21 @@ const headerStyles=StyleSheet.create({
         width:'100%'
     },
     headerContainer:{
-        width:'40%',
         display:'flex',
         flexDirection:'row',
-        justifyContent:'space-between',
+        alignItems:'center'
+    },
+    headerTextView:{
+        width:60,
+        display:'flex',
+        flexDirection:'row',
+        justifyContent:'center',
+        alignItems:'center'
     },
     headerText:{
         fontSize:16,
-        width:38
+        width:38,
+        
     },
     headerSelected:{
         fontSize:16,

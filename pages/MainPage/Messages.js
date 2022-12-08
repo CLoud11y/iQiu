@@ -23,7 +23,7 @@ const Header=()=>{
         <View style={headerStyles.headerView}>
             <View style={headerStyles.opeView}>
                 <View style={[headerStyles.imageView,{backgroundColor:'rgba(243,237,155,0.5)'}]}>
-                    <Image source={require('../../static/like_done.png')} style={headerStyles.opeImage} />
+                    <Image source={require('../../static/@.png')} style={[headerStyles.opeImage,{opacity:0.6}]} />
                 </View>
                 
                 <Text style={headerStyles.opeText}>@我的</Text>
@@ -89,6 +89,13 @@ const Messages=()=>{
             <FlatList
                 showsVerticalScrollIndicator = {false}
                 ListHeaderComponent={()=><Header/>}
+                ListFooterComponent={()=>{
+                    return(
+                        <View style={{display:'flex',justifyContent:'center',alignItems:'center',flexDirection:'row',padding:20}}>
+                            <Text>暂时只有这么多啦~</Text>
+                        </View>
+                    )
+                }}
                 data={msg}
                 renderItem={({ item, index, separators }) => (
                     <Pressable onPress={()=>{console.log(index)}} key={item.uid}>
