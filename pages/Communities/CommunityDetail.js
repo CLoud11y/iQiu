@@ -3,6 +3,9 @@ import { StyleSheet, Text,View ,StatusBar,Image, FlatList,Pressable,Animated} fr
 import LinearGradient from "react-native-linear-gradient"
 import { color } from "react-native-reanimated"
 import CommunityPost from '../../component/CommunityPost'
+import {getCommunityInfo} from '../../api/community'
+import {getCommunityPosts} from '../../api/posts'
+import timeCalculate from '../../api/timeCalculate'
 
 const Navigation=(props)=>{
 
@@ -34,7 +37,7 @@ const Navigation=(props)=>{
                             <Image source={require('../../static/back.png')} style={naviStyles.backImage} />
                         </Pressable>
                         
-                        <Text style={naviStyles.commuName}>足球圈吧</Text>
+                        <Text style={naviStyles.commuName}>{props.communityName}</Text>
                     </View>
                     <View style={naviStyles.opeView}>
                         <Image source={require('../../static/search.png')}  style={naviStyles.backImage}/>
@@ -57,9 +60,9 @@ const Header=(props)=>{
                 <View style={{height:props.occupyHeight}}></View>
                 <View style={headerStyles.commuInfoView}>
                     <View style={headerStyles.commuInfoContainer}>
-                        <Image source={require('../../static/football.png')} style={headerStyles.commuAvatar}  />
+                        <Image source={{uri:props.communityAvatar}} style={headerStyles.commuAvatar}  />
                         <View style={headerStyles.commuInfo}>
-                            <Text style={headerStyles.commuName}>足球圈</Text>
+                            <Text style={headerStyles.commuName}>{props.communityName}</Text>
                             <Text style={headerStyles.commuLevel}>LV1  初来乍到</Text>
                             <View style={{marginTop:5}}>
                                 <View style={headerStyles.levelAll}></View>
@@ -89,17 +92,23 @@ const Header=(props)=>{
                 <View style={headerStyles.divider}></View>
                 <View style={headerStyles.choiceView}>
                     <View style={headerStyles.choiceContainer}>
-                        <Text style={[headerStyles.choice,headerStyles.selected]}>热门</Text>
-                        <View style={[headerStyles.choiceTip,{opacity:1}]}></View>
+                        <Pressable onPress={()=>props.onChange(0)}>
+                            <Text style={[headerStyles.choice,props.choice==0&&headerStyles.selected]}>全部</Text>
+                        </Pressable>
+                        <View style={[headerStyles.choiceTip,{opacity:props.choice==0?1:0}]}></View>
                     </View>
                     
                     <View style={headerStyles.choiceContainer}>
-                        <Text style={[headerStyles.choice]}>最新</Text>
-                        <View style={[headerStyles.choiceTip,{opacity:0}]}></View>
+                        <Pressable onPress={()=>props.onChange(1)}>
+                            <Text style={[headerStyles.choice,props.choice==1&&headerStyles.selected]}>闲聊</Text>
+                        </Pressable>
+                        <View style={[headerStyles.choiceTip,{opacity:props.choice==1?1:0}]}></View>
                     </View>
                     <View style={headerStyles.choiceContainer}>
-                        <Text style={[headerStyles.choice]}>全部</Text>
-                        <View style={[headerStyles.choiceTip,{opacity:0}]}></View>
+                        <Pressable onPress={()=>props.onChange(2)}>
+                            <Text style={[headerStyles.choice,props.choice==2&&headerStyles.selected]}>约球</Text>
+                        </Pressable>
+                        <View style={[headerStyles.choiceTip,{opacity:props.choice==2?1:0}]}></View>
                     </View>
                 </View>
             </View>
@@ -110,24 +119,45 @@ const Header=(props)=>{
 
 const CommutyDetail=(props)=>{
 
-    let communityInfo={}
+    // let communityInfo={}
 
-    communityInfo={
-        commuName:'足球圈',
-        commuAvatar:require('../../static/football.png'),
-    }
+    // communityInfo={
+    //     commuName:'足球圈',
+    //     commuAvatar:require('../../static/football.png'),
+    // }
 
-    let [postList,setPostList]=useState([])
+    const communityId=props.route.params.communityId
+    const [communityInfo,setCommunityInfo]=useState([])
+    const [postList,setPostList]=useState([])
 
     useEffect(()=>{
-        fetch('http://localhost:8081/data/postList.json').then((res)=>res.json())
-        .then((resJson)=>{
-            setPostList(resJson.data.map((item,index)=>{
-                return item
+        // console.log(props.route.params.communityId)
+        getCommunityInfo(communityId)
+        .then((res)=>{
+            // console.log(res)
+            setCommunityInfo({...res})
+        }).catch((err)=>{
+            console.log(err)
+        })
+
+        getCommunityPosts(communityId,0,15)
+        .then((res)=>{
+            // console.log(res)
+            setPostList(res.map((item,index)=>{
+                return {...item,lastCommentTime:timeCalculate(item.lastCommentTime,"回复于")}
             }))
         }).catch((err)=>{
             console.log(err)
         })
+
+        // fetch('http://localhost:8081/data/postList.json').then((res)=>res.json())
+        // .then((resJson)=>{
+        //     setPostList(resJson.data.map((item,index)=>{
+        //         return item
+        //     }))
+        // }).catch((err)=>{
+        //     console.log(err)
+        // })
     },[])
 
 
@@ -138,6 +168,7 @@ const CommutyDetail=(props)=>{
 
 
     let [occupyHeight,setOccupyHeight]=useState(100)
+    let [choice,setChoice]=useState(0)
     let scrollY = new Animated.Value(0);
     // let opacity=1
     let opacity1 = scrollY.interpolate({
@@ -160,10 +191,11 @@ const CommutyDetail=(props)=>{
 
     return(
         <>
-            <Navigation onGetHeight={(e)=>setOccupyHeight(e)} navigation={props.navigation} opacity1={opacity1} opacity2={opacity2}/>
+            <Navigation onGetHeight={(e)=>setOccupyHeight(e)} 
+                communityName={communityInfo.communityName} navigation={props.navigation} opacity1={opacity1} opacity2={opacity2}/>
             <FlatList 
                 style={mainStyles.list}
-                ListHeaderComponent={()=><Header occupyHeight={occupyHeight}/>}
+                ListHeaderComponent={()=><Header occupyHeight={occupyHeight} onChange={(e)=>setChoice(e)} {...communityInfo} choice={choice} />}
                 ListFooterComponent={()=>{
                     return(
                         <View style={{display:'flex',justifyContent:'center',alignItems:'center',flexDirection:'row',padding:20}}>
@@ -172,11 +204,28 @@ const CommutyDetail=(props)=>{
                     )
                 }}
                 data={postList}
-                renderItem={({ item, index, separators }) => (
-                    <Pressable onPress={()=>{naviToPost(item.postId)}} key={item.postId}>
-                        <CommunityPost {...item}></CommunityPost>
-                    </Pressable>
-                )}
+                renderItem={({ item, index, separators }) => {
+                    if(choice==0){
+                        return(
+                            <Pressable onPress={()=>{naviToPost(item.postId)}} key={item.postId}>
+                                <CommunityPost {...item}></CommunityPost>
+                            </Pressable>
+                        )
+                    }else if(choice==1&&item.postType==0){
+                        return(
+                            <Pressable onPress={()=>{naviToPost(item.postId)}} key={item.postId}>
+                                <CommunityPost {...item}></CommunityPost>
+                            </Pressable>
+                        )
+                    }else if(choice==2&&item.postType==1){
+                        return(
+                            <Pressable onPress={()=>{naviToPost(item.postId)}} key={item.postId}>
+                                <CommunityPost {...item}></CommunityPost>
+                            </Pressable>
+                        )
+                    }
+                    
+                }}
                 onScroll={Animated.event([{
                     nativeEvent: {
                         contentOffset: {
@@ -275,6 +324,7 @@ const headerStyles=StyleSheet.create({
         borderRadius:25,
         borderWidth:1,
         borderColor:'white',
+        resizeMode:'contain'
     },
     commuInfo:{
         marginLeft:15,
